@@ -34,6 +34,8 @@ def local_0(args):
     X = cf[x_headers]
     y = df[y_headers]
 
+    tol = input_list["tol"]
+    eta = input_list["eta"]
 
     cache_dict = {
         "covariates": X.to_json(orient='records'),
@@ -45,7 +47,9 @@ def local_0(args):
         "output": {
             "computation_phase": "local_0",
             "x_headers": x_headers,
-            "y_headers": y_headers
+            "y_headers": y_headers,
+            "tol": tol,
+            "eta": eta
         },
         "cache": cache_dict
     }
@@ -65,13 +69,16 @@ def local_1(args):
     y = pd.read_json(args["cache"]["dependents"], orient='records')
     y_labels = list(y.columns)
 
-    meanY_vector, lenY_vector, local_stats_list = gather_local_stats(X, y)
+    site = args['state']['clientId']
 
-    #augmented_X = add_site_covariates(args, X)
+    beta_vector, local_stats_list, meanY_vector, lenY_vector, site = gather_local_stats(X, y, site)
 
-    beta_vec_size = X.shape[1]
+    augmented_X = add_site_covariates(args, X)
+
+    beta_vec_size = augmented_X.shape[1]
 
     output_dict = {
+        "beta_vector_local": beta_vector,
         "beta_vec_size": beta_vec_size,
         "number_of_regressions": len(y_labels),
         "computation_phase": "local_1"
@@ -80,11 +87,11 @@ def local_1(args):
     cache_dict = {
         "beta_vec_size": beta_vec_size,
         "number_of_regressions": len(y_labels),
-        "covariates": X.to_json(orient='records'),
+        "covariates": augmented_X.to_json(orient='records'),
         "y_labels": y_labels,
         "mean_y_local": meanY_vector,
         "count_local": lenY_vector,
-        "local_stats_list": local_stats_list
+        "local_stats_list": local_stats_list,
     }
 
     computation_output = {

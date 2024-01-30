@@ -32,6 +32,9 @@ def remote_0(args):
     X_labels = input_list[userID]["x_headers"]
     y_labels = input_list[userID]["y_headers"]
 
+    tol = input_list[userID]["tol"]
+    eta = input_list[userID]["eta"]
+
     output_dict = {
         "site_covar_list": site_covar_list,
         "computation_phase": "remote_0"
@@ -39,7 +42,9 @@ def remote_0(args):
 
     cache_dict = {
         "X_labels": X_labels,
-        "y_labels": y_labels
+        "y_labels": y_labels,
+        "tol": tol,
+        "eta": eta
     }
 
     computation_output_dict = {
@@ -64,9 +69,10 @@ def remote_1(args):
     beta1 = 0.9
     beta2 = 0.999
     eps = 1e-8
-    tol = 100  # 0.01
-    eta = 1000  # 0.05
     count = 0
+
+    tol = args["cache"]["tol"]
+    eta = args["cache"]["eta"]
 
     wp, wc, mt, vt = [
         np.zeros((number_of_regressions, beta_vec_size), dtype=float)
@@ -93,7 +99,7 @@ def remote_1(args):
         "mt": mt.tolist(),
         "vt": vt.tolist(),
         "iter_flag": iter_flag,
-        "number_of_regressions": number_of_regressions
+        "number_of_regressions": number_of_regressions,
     }
 
     computation_output = {
@@ -125,7 +131,8 @@ def remote_2(args):
     count = count + 1
 
     if not iter_flag:
-        cache_dict = {"avg_beta_vector": wc.tolist()}
+        cache_dict = {"avg_beta_vector": wc.tolist(),
+            "X_labels": args["cache"]["X_labels"]}
 
         output_dict = {
             "avg_beta_vector": wc.tolist(),
@@ -138,16 +145,18 @@ def remote_2(args):
         }
     else:
         input_list = args["input"]
+        sorted_site_ids = sorted(list(input_list.keys()))
+
         if len(input_list) == 1:
             grad_remote = [
                 np.array(args["input"][site]["local_grad"])
-                for site in input_list
+                for site in sorted_site_ids
             ]
             grad_remote = grad_remote[0]
         else:
             grad_remote = sum([
                 np.array(args["input"][site]["local_grad"])
-                for site in input_list
+                for site in sorted_site_ids
             ])
 
         mt = beta1 * np.array(mt) + (1 - beta1) * grad_remote
@@ -156,15 +165,11 @@ def remote_2(args):
         m = mt / (1 - beta1**count)
         v = vt / (1 - beta2**count)
 
-        m = m.astype(float)
-        v = v.astype(float)
-
         wc = wp - eta * m / (np.sqrt(v) + eps)
 
         mask_flag = np.linalg.norm(wc - wp, axis=1) <= tol
 
-        #if sum(mask_flag) == number_of_regressions:
-        if args['state']['iteration'] == number_of_regressions: 
+        if sum(mask_flag) == number_of_regressions:
             iter_flag = 0
 
         for i in range(mask_flag.shape[0]):
@@ -183,7 +188,8 @@ def remote_2(args):
             "wc": wc.tolist(),
             "mt": mt.tolist(),
             "vt": vt.tolist(),
-            "iter_flag": iter_flag
+            "iter_flag": iter_flag,
+            "X_labels": args["cache"]["X_labels"]
         }
 
         computation_output = {
@@ -226,18 +232,19 @@ def remote_3(args):
     """
     input_list = args["input"]
     userID = list(input_list)[0]
+    sorted_site_ids = sorted(list(input_list.keys()))
     first_user_id = list(input_list)[0]
 
     avg_beta_vector = np.array(args["cache"]["avg_beta_vector"])
 
-    all_local_stats_dicts = [
-        input_list[site]["local_stats_list"] for site in input_list
-    ]
+    all_local_stats_dicts = [{
+        site: input_list[site]["local_stats_list"] for site in sorted_site_ids
+    }]
 
     mean_y_local = [input_list[site]["mean_y_local"] for site in input_list]
     count_y_local = [np.array(input_list[site]["count_local"]) for site in input_list]
     mean_y_global = np.array(mean_y_local) * np.array(count_y_local)
-    mean_y_global = np.sum(mean_y_global, axis=0) / np.sum(count_y_local, axis=0)
+    mean_y_global = np.average(mean_y_global, axis=0)
 
     dof_global = sum(count_y_local) - avg_beta_vector.shape[1]
 
@@ -308,6 +315,7 @@ def remote_4(args):
     input_list = args["input"]
 
     X_labels = args["cache"]["X_labels"]
+    sorted_site_ids = sorted(list(input_list.keys()))
     y_labels = args["cache"]["y_labels"]
     all_local_stats_dicts = args["cache"]["all_local_stats_dicts"]
 
@@ -340,19 +348,30 @@ def remote_4(args):
     # Block of code to print local stats as well
     sites = [site for site in input_list]
 
-    all_local_stats_dicts = list(map(list, zip(*all_local_stats_dicts)))
+    keys = list(all_local_stats_dicts[0].keys())
 
-    a_dict = [{key: value
-               for key, value in zip(sites, stats_dict)}
-              for stats_dict in all_local_stats_dicts]
+    a_dict = []
+
+    for i in range(len(all_local_stats_dicts[0][keys[0]])):
+        obj = {}
+        for v in all_local_stats_dicts[0].items():
+            obj.update({v[0]:v[1][i]})
+        a_dict.append(obj)
 
     # Block of code to print just global stats
     keys1 = [
         "Coefficient", "R Squared", "t Stat", "P-value", "Degrees of Freedom",
         "covariate_labels"
     ]
+
+    X_labels.insert(0, 'const')
+
+    sitesMinus = sites.pop()
+
+    X_labels = X_labels + sites
+
     global_dict_list = get_stats_to_dict(keys1, avg_beta_vector,
-                                         r_squared_global, ts_global[0],
+                                         r_squared_global, ts_global,
                                          ps_global, dof_global,
                                          repeat(X_labels, len(y_labels)))
 
@@ -364,7 +383,7 @@ def remote_4(args):
 
     computation_output = {"output": output_dict, "success": True}
 
-    log(computation_output, args['state'])
+    #raise Exception(computation_output)
 
     return computation_output
 

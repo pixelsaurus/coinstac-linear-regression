@@ -7,13 +7,26 @@
       "value": ["site1_Covariate.csv"]
     },
     "y_headers": {
-      "value": ["Left-Lateral-Ventricle","Right-Lateral-Ventricle","Left-Thalamus-Proper","Right-Thalamus-Proper","Left-Caudate","Right-Caudate","Left-Putamen","Right-Putamen","Left-Pallidum","Right-Pallidum","Left-Hippocampus","Right-Hippocampus","Left-Amygdala","Right-Amygdala","Left-Accumbens-area","Right-Accumbens-area","EstimatedTotalIntraCranialVol"]
+      "value": ["Left-Lateral-Ventricle","Right-Lateral-Ventricle"]
     },
     "x_headers": {
       "value": ["isControl", "age"]
     },
-    "lambda": {
-      "value": 1
+    "lambda":{
+      "fulfilled":true,
+      "value":1
+    },
+    "tol": {
+      "fulfilled": true,
+      "value": 1000
+    },
+    "eta": {
+      "fulfilled": true,
+      "value": 10000
+    },
+    "max_iter": {
+      "fulfilled": true,
+      "value": 10000
     }
   },
   {
@@ -24,13 +37,146 @@
       "value": ["site2_Covariate.csv"]
     },
     "y_headers": {
-      "value": ["Left-Lateral-Ventricle","Right-Lateral-Ventricle","Left-Thalamus-Proper","Right-Thalamus-Proper","Left-Caudate","Right-Caudate","Left-Putamen","Right-Putamen","Left-Pallidum","Right-Pallidum","Left-Hippocampus","Right-Hippocampus","Left-Amygdala","Right-Amygdala","Left-Accumbens-area","Right-Accumbens-area","EstimatedTotalIntraCranialVol"]
+      "value": ["Left-Lateral-Ventricle","Right-Lateral-Ventricle"]
     },
     "x_headers": {
       "value": ["isControl", "age"]
     },
-    "lambda": {
-      "value": 1
+    "lambda":{
+      "fulfilled":true,
+      "value":1
+    },
+    "tol": {
+      "fulfilled": true,
+      "value": 1000
+    },
+    "eta": {
+      "fulfilled": true,
+      "value": 10000
+    },
+    "max_iter": {
+      "fulfilled": true,
+      "value": 10000
+    }
+  },
+  {
+    "data": {
+      "value": ["site1_Data.csv"]
+    },
+    "covariates": {
+      "value": ["site1_Covariate.csv"]
+    },
+    "y_headers": {
+      "value": ["Left-Lateral-Ventricle","Right-Lateral-Ventricle"]
+    },
+    "x_headers": {
+      "value": ["isControl", "age"]
+    },
+    "lambda":{
+      "fulfilled":true,
+      "value":1
+    },
+    "tol": {
+      "fulfilled": true,
+      "value": 1000
+    },
+    "eta": {
+      "fulfilled": true,
+      "value": 10000
+    },
+    "max_iter": {
+      "fulfilled": true,
+      "value": 10000
+    }
+  },
+  {
+    "data": {
+      "value": ["site2_Data.csv"]
+    },
+    "covariates": {
+      "value": ["site2_Covariate.csv"]
+    },
+    "y_headers": {
+      "value": ["Left-Lateral-Ventricle","Right-Lateral-Ventricle"]
+    },
+    "x_headers": {
+      "value": ["isControl", "age"]
+    },
+    "lambda":{
+      "fulfilled":true,
+      "value":1
+    },
+    "tol": {
+      "fulfilled": true,
+      "value": 1000
+    },
+    "eta": {
+      "fulfilled": true,
+      "value": 10000
+    },
+    "max_iter": {
+      "fulfilled": true,
+      "value": 10000
+    }
+  },
+  {
+    "data": {
+      "value": ["site1_Data.csv"]
+    },
+    "covariates": {
+      "value": ["site1_Covariate.csv"]
+    },
+    "y_headers": {
+      "value": ["Left-Lateral-Ventricle","Right-Lateral-Ventricle"]
+    },
+    "x_headers": {
+      "value": ["isControl", "age"]
+    },
+    "lambda":{
+      "fulfilled":true,
+      "value":1
+    },
+    "tol": {
+      "fulfilled": true,
+      "value": 1000
+    },
+    "eta": {
+      "fulfilled": true,
+      "value": 10000
+    },
+    "max_iter": {
+      "fulfilled": true,
+      "value": 10000
+    }
+  },
+  {
+    "data": {
+      "value": ["site2_Data.csv"]
+    },
+    "covariates": {
+      "value": ["site2_Covariate.csv"]
+    },
+    "y_headers": {
+      "value": ["Left-Lateral-Ventricle","Right-Lateral-Ventricle"]
+    },
+    "x_headers": {
+      "value": ["isControl", "age"]
+    },
+    "lambda":{
+      "fulfilled":true,
+      "value":1
+    },
+    "tol": {
+      "fulfilled": true,
+      "value": 1000
+    },
+    "eta": {
+      "fulfilled": true,
+      "value": 10000
+    },
+    "max_iter": {
+      "fulfilled": true,
+      "value": 10000
     }
   }
 ]
