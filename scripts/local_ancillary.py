@@ -106,3 +106,7 @@ def add_site_covariates(args, X):
     augmented_X = pd.concat([biased_X, site_df], axis=1)
 
     return augmented_X
+
+
+def get_cost(y_actual, y_predicted):
+    return np.average((y_actual-y_predicted)**2)
