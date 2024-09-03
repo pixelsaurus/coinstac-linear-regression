@@ -11,8 +11,8 @@ import os
 import pandas as pd
 import sys
 
-from scripts.regression import sum_squared_error
-from scripts.local_ancillary import gather_local_stats, add_site_covariates
+from scripts.regression import sum_squared_error, y_estimate
+from scripts.local_ancillary import gather_local_stats, add_site_covariates, get_cost
 from scripts.utils import list_recursive, log
 
 def local_0(args):    
@@ -112,6 +112,9 @@ def local_2(args):
     X = pd.read_json(args["cache"]["covariates"], orient='records')
     y = pd.read_json(args["cache"]["dependents"], orient='records')
 
+    X.to_csv(os.path.join(args['state']["outputDirectory"], f'{args["state"]["clientId"]}_X.csv'))
+    y.to_csv(os.path.join(args['state']["outputDirectory"], f'{args["state"]["clientId"]}_y.csv'))
+
     beta_vec_size = args["cache"]["beta_vec_size"]
     number_of_regressions = args["cache"]["number_of_regressions"]
 
@@ -124,6 +127,7 @@ def local_2(args):
     w = args["input"]["remote_beta"]
 
     gradient = np.zeros((number_of_regressions, beta_vec_size))
+    cost = np.zeros(number_of_regressions)
 
     for i in range(number_of_regressions):
         y_ = y[i]
@@ -131,9 +135,11 @@ def local_2(args):
         if not mask_flag[i]:
             gradient[i, :] = (
                 1 / len(X)) * np.dot(biased_X.T, np.dot(biased_X, w_) - y_)
+        cost[i] = get_cost(y_actual=y[i], y_predicted=np.dot(biased_X, w_))
 
     output_dict = {
         "local_grad": gradient.tolist(),
+        "local_cost": cost.tolist(),
         "computation_phase": "local_2"
     }
 
@@ -223,7 +229,7 @@ def local_4(args):
     for index, column in enumerate(y.columns):
         curr_y = y[column].values
         SSE_local.append(
-            sum_squared_error(biased_X, curr_y, avg_beta_vector))
+            sum_squared_error( curr_y, y_estimate(biased_X, avg_beta_vector)[index]))
         SST_local.append(
             np.sum(
                 np.square(np.subtract(curr_y, mean_y_global[index])),
@@ -268,3 +274,4 @@ def start(PARAM_DICT):
         return local_4(PARAM_DICT)
     else:
         raise ValueError("Error occurred at Local")
+
