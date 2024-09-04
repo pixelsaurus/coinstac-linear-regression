@@ -80,6 +80,7 @@ def local_1(args):
     output_dict = {
         "beta_vector_local": beta_vector,
         "beta_vec_size": beta_vec_size,
+        "augmented_X_labels": list(augmented_X.columns),
         "number_of_regressions": len(y_labels),
         "computation_phase": "local_1"
     }
@@ -274,4 +275,5 @@ def start(PARAM_DICT):
         return local_4(PARAM_DICT)
     else:
         raise ValueError("Error occurred at Local")
+
 
