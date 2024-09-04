@@ -17,17 +17,21 @@ from scripts.remote_ancillary import get_stats_to_dict
 
 
 def remote_0(args):
-    #log(args, args['state'])
+    # log(args, args['state'])
 
     input_list = args["input"]
 
-    site_ids = list(input_list.keys())
-    userID = list(input_list)[0]
-    
+    site_ids = sorted(list(input_list.keys()))
+    userID = list(site_ids)[0]
+
     site_covar_list = [
         '{}_{}'.format('site', label) for index, label in enumerate(site_ids)
         if index
     ]
+
+    columns_to_normalize = set()
+    for userID in site_ids:
+        columns_to_normalize.update(columns_to_normalize.union(input_list[userID]["columns_to_normalize"]))
 
     X_labels = input_list[userID]["x_headers"]
     y_labels = input_list[userID]["y_headers"]
@@ -37,6 +41,7 @@ def remote_0(args):
 
     output_dict = {
         "site_covar_list": site_covar_list,
+        "columns_to_normalize": list(columns_to_normalize),
         "computation_phase": "remote_0"
     }
 
@@ -52,10 +57,9 @@ def remote_0(args):
         "cache": cache_dict,
     }
 
-    #log(args, args['state'])
+    # log(args, args['state'])
 
     return computation_output_dict
-
 
 def remote_1(args):
     #log(args, args['state'])
